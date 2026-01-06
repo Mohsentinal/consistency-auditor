@@ -1,2 +1,0 @@
-symbol,side,bt_trade_id,lv_trade_id,bt_open_time,lv_open_time,open_time_diff_s,bt_open_price,lv_open_price,open_price_diff
-EURUSD,BUY,BT-1,LV-991,2026-01-01T10:00:00+00:00,2026-01-01T10:01:00+00:00,60.000000,1.100000,1.100200,+0.000200
