@@ -35,7 +35,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--fail-on",
         choices=["none", "any", "missing", "extra"],
         default="none",
-        help="Return nonzero exit code if audit detects issues (default: none)",
+        help="Exit with code 3 if mismatches exist (any/missing/extra). Default: none",
     )
 
     return p
@@ -84,16 +84,16 @@ def _print_audit(res) -> None:
     _print_list("Extra in live", res.extra_in_live)
 
 
-def _exit_code_for_fail_on(fail_on: str, missing: int, extra: int) -> int:
-    if fail_on == "none":
-        return 0
-    if fail_on == "any":
-        return 3 if (missing > 0 or extra > 0) else 0
-    if fail_on == "missing":
-        return 3 if missing > 0 else 0
-    if fail_on == "extra":
-        return 3 if extra > 0 else 0
-    return 0
+def _should_fail(args, res) -> bool:
+    if args.fail_on == "none":
+        return False
+    if args.fail_on == "any":
+        return bool(res.missing_in_live or res.extra_in_live)
+    if args.fail_on == "missing":
+        return bool(res.missing_in_live)
+    if args.fail_on == "extra":
+        return bool(res.extra_in_live)
+    return False
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -132,9 +132,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"\nWrote: {matched_path}")
             print(f"Wrote: {unmatched_path}")
 
-        missing = len(res.missing_in_live)
-        extra = len(res.extra_in_live)
-        return _exit_code_for_fail_on(args.fail_on, missing, extra)
+        return 3 if _should_fail(args, res) else 0
 
     p.print_help()
     return 0
