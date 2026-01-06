@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from typing import Iterable
 
 from . import __version__
 from .io_csv import read_trades_csv
@@ -16,12 +17,27 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub = p.add_subparsers(dest="cmd")
 
-    a = sub.add_parser("audit", help="Audit backtest vs live trades (CSV inputs)")
-    a.add_argument("--backtest", required=True, help="Path to backtest CSV")
-    a.add_argument("--live", required=True, help="Path to live CSV")
-    a.add_argument("--tolerance", type=int, default=120, help="Open-time tolerance in seconds")
+    pa = sub.add_parser("audit", help="Compare backtest vs live CSV trade lists")
+    pa.add_argument("--backtest", required=True, help="Path to backtest CSV")
+    pa.add_argument("--live", required=True, help="Path to live CSV")
+    pa.add_argument("--tolerance", type=int, default=120, help="Match tolerance in seconds (default: 120)")
 
     return p
+
+
+def _fmt_trade(t) -> str:
+    tid = t.trade_id or "-"
+    return f"{t.symbol} {t.side.value} open={t.open_time.isoformat()} price={t.open_price:.6f} id={tid}"
+
+
+def _print_list(title: str, trades: Iterable) -> None:
+    trades = list(trades)
+    print(f"\n{title} ({len(trades)}):")
+    if not trades:
+        print("  -")
+        return
+    for t in trades:
+        print("  " + _fmt_trade(t))
 
 
 def _print_audit(res) -> None:
@@ -38,6 +54,18 @@ def _print_audit(res) -> None:
 
     print(f"matched={matched} missing_in_live={missing} extra_in_live={extra}")
     print(f"mean_open_time_diff_s={mean_time:.2f} mean_abs_open_price_diff={mean_abs_price:.6f}")
+
+    if matched:
+        print("\nMatched pairs:")
+        for m in res.matched:
+            bt = _fmt_trade(m.backtest)
+            lv = _fmt_trade(m.live)
+            print(f"  BT: {bt}")
+            print(f"  LV: {lv}")
+            print(f"  dt_s={m.open_time_diff_s:.2f} price_diff={m.open_price_diff:+.6f}\n")
+
+    _print_list("Missing in live", res.missing_in_live)
+    _print_list("Extra in live", res.extra_in_live)
 
 
 def main(argv: list[str] | None = None) -> int:
