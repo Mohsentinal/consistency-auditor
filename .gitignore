@@ -1,0 +1,19 @@
+﻿# venvs
+.venv/
+.venv_*/
+venv/
+
+# Python cache / compiled
+__pycache__/
+*.py[cod]
+
+# packaging/build outputs
+*.egg-info/
+build/
+dist/
+
+# test/cache
+.pytest_cache/
+
+# OS/editor
+.DS_Store
