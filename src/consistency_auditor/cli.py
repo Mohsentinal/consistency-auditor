@@ -23,6 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
     pa.add_argument("--live", required=True, help="Path to live CSV")
     pa.add_argument("--tolerance", type=int, default=120, help="Match tolerance in seconds (default: 120)")
     pa.add_argument("--out", default="", help="Optional output folder to write matched/unmatched CSVs")
+    pa.add_argument("--out-prefix", default="", help="Optional filename suffix/prefix (default: UTC timestamp)")
 
     return p
 
@@ -86,7 +87,7 @@ def main(argv: list[str] | None = None) -> int:
         _print_audit(res)
 
         if args.out:
-            matched_path, unmatched_path = write_audit_csv(res, args.out)
+            matched_path, unmatched_path = write_audit_csv(res, args.out, prefix=args.out_prefix or None)
             print(f"\nWrote: {matched_path}")
             print(f"Wrote: {unmatched_path}")
 

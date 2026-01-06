@@ -5,7 +5,7 @@ from pathlib import Path
 from consistency_auditor.cli import main
 
 
-def test_cli_writes_csv_outputs(tmp_path: Path, capsys):
+def test_cli_writes_csv_outputs_with_prefix(tmp_path: Path, capsys):
     backtest = tmp_path / "backtest.csv"
     live = tmp_path / "live.csv"
     out_dir = tmp_path / "out"
@@ -34,10 +34,12 @@ def test_cli_writes_csv_outputs(tmp_path: Path, capsys):
             "120",
             "--out",
             str(out_dir),
+            "--out-prefix",
+            "demo",
         ]
     )
     _ = capsys.readouterr().out
 
     assert rc == 0
-    assert (out_dir / "matched.csv").exists()
-    assert (out_dir / "unmatched.csv").exists()
+    assert (out_dir / "matched_demo.csv").exists()
+    assert (out_dir / "unmatched_demo.csv").exists()

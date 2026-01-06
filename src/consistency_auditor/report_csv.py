@@ -1,23 +1,34 @@
 from __future__ import annotations
 
 import csv
+from datetime import datetime
 from pathlib import Path
 
 from .match import AuditResult
 
 
-def write_audit_csv(res: AuditResult, out_dir: str | Path) -> tuple[Path, Path]:
+def _default_prefix() -> str:
+    return datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+
+
+def write_audit_csv(
+    res: AuditResult,
+    out_dir: str | Path,
+    prefix: str | None = None,
+) -> tuple[Path, Path]:
     """
     Write:
-      - matched.csv: one row per matched pair
-      - unmatched.csv: missing_in_live + extra_in_live
+      - matched_<prefix>.csv: one row per matched pair
+      - unmatched_<prefix>.csv: missing_in_live + extra_in_live
     Returns (matched_path, unmatched_path).
     """
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    matched_path = out / "matched.csv"
-    unmatched_path = out / "unmatched.csv"
+    px = (prefix or "").strip() or _default_prefix()
+
+    matched_path = out / f"matched_{px}.csv"
+    unmatched_path = out / f"unmatched_{px}.csv"
 
     with matched_path.open("w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(
