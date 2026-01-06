@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 from typing import Iterable
 
 from . import __version__
@@ -86,8 +87,19 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cmd == "audit":
-        bt = read_trades_csv(args.backtest, source="backtest")
-        lv = read_trades_csv(args.live, source="live")
+        bt_path = Path(args.backtest)
+        lv_path = Path(args.live)
+
+        if not bt_path.exists():
+            print(f"ERROR: backtest file not found: {bt_path}")
+            return 2
+        if not lv_path.exists():
+            print(f"ERROR: live file not found: {lv_path}")
+            return 2
+
+        bt = read_trades_csv(bt_path, source="backtest")
+        lv = read_trades_csv(lv_path, source="live")
+
         res = audit_trades(
             bt,
             lv,
