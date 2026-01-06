@@ -6,6 +6,7 @@ from typing import Iterable
 from . import __version__
 from .io_csv import read_trades_csv
 from .match import audit_trades
+from .report_csv import write_audit_csv
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -21,6 +22,7 @@ def build_parser() -> argparse.ArgumentParser:
     pa.add_argument("--backtest", required=True, help="Path to backtest CSV")
     pa.add_argument("--live", required=True, help="Path to live CSV")
     pa.add_argument("--tolerance", type=int, default=120, help="Match tolerance in seconds (default: 120)")
+    pa.add_argument("--out", default="", help="Optional output folder to write matched/unmatched CSVs")
 
     return p
 
@@ -80,7 +82,14 @@ def main(argv: list[str] | None = None) -> int:
         bt = read_trades_csv(args.backtest, source="backtest")
         lv = read_trades_csv(args.live, source="live")
         res = audit_trades(bt, lv, time_tolerance_s=args.tolerance)
+
         _print_audit(res)
+
+        if args.out:
+            matched_path, unmatched_path = write_audit_csv(res, args.out)
+            print(f"\nWrote: {matched_path}")
+            print(f"Wrote: {unmatched_path}")
+
         return 0
 
     p.print_help()
