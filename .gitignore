@@ -20,3 +20,7 @@ dist/
 
 # generated audit outputs
 outputs/
+
+# generated outputs
+outputs/
+
