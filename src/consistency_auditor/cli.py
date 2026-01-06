@@ -22,8 +22,14 @@ def build_parser() -> argparse.ArgumentParser:
     pa.add_argument("--backtest", required=True, help="Path to backtest CSV")
     pa.add_argument("--live", required=True, help="Path to live CSV")
     pa.add_argument("--tolerance", type=int, default=120, help="Match tolerance in seconds (default: 120)")
+    pa.add_argument(
+        "--price-tolerance",
+        type=float,
+        default=None,
+        help="Optional max abs open-price diff to allow a match",
+    )
     pa.add_argument("--out", default="", help="Optional output folder to write matched/unmatched CSVs")
-    pa.add_argument("--out-prefix", default="", help="Optional filename suffix/prefix (default: UTC timestamp)")
+    pa.add_argument("--out-prefix", default="", help="Optional prefix for output CSV filenames (avoid overwrites)")
 
     return p
 
@@ -82,7 +88,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "audit":
         bt = read_trades_csv(args.backtest, source="backtest")
         lv = read_trades_csv(args.live, source="live")
-        res = audit_trades(bt, lv, time_tolerance_s=args.tolerance)
+        res = audit_trades(
+            bt,
+            lv,
+            time_tolerance_s=args.tolerance,
+            price_tolerance=args.price_tolerance,
+        )
 
         _print_audit(res)
 

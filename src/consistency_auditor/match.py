@@ -26,11 +26,13 @@ def audit_trades(
     backtest: list[Trade],
     live: list[Trade],
     time_tolerance_s: int = 120,
+    price_tolerance: float | None = None,
 ) -> AuditResult:
     """
-    Very first MVP matcher:
+    MVP matcher:
     - match by (symbol, side) and nearest open_time within tolerance
-    - 1-to-1 matching (greedy)
+    - optional price tolerance gate (abs(open_price_diff) <= price_tolerance)
+    - 1-to-1 greedy matching
     """
     tol = timedelta(seconds=time_tolerance_s)
 
@@ -38,20 +40,27 @@ def audit_trades(
     matched: list[TradeMatch] = []
     extra_in_live: list[Trade] = []
 
-    # sort makes behavior deterministic
     bt_remaining.sort(key=lambda t: (t.symbol, t.side.value, t.open_time))
     live_sorted = sorted(live, key=lambda t: (t.symbol, t.side.value, t.open_time))
 
     for lt in live_sorted:
         best_i: Optional[int] = None
-        best_dt = None
+        best_dt: Optional[timedelta] = None
 
         for i, bt in enumerate(bt_remaining):
             if bt.symbol != lt.symbol or bt.side != lt.side:
                 continue
 
             dt = abs(bt.open_time - lt.open_time)
-            if dt <= tol and (best_dt is None or dt < best_dt):
+            if dt > tol:
+                continue
+
+            # price gate (if enabled)
+            if price_tolerance is not None:
+                if abs(lt.open_price - bt.open_price) > price_tolerance:
+                    continue
+
+            if best_dt is None or dt < best_dt:
                 best_dt = dt
                 best_i = i
 
