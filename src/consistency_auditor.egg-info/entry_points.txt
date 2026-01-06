@@ -1,0 +1,2 @@
+[console_scripts]
+consistency-auditor = consistency_auditor.cli:main

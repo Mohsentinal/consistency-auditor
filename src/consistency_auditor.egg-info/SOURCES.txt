@@ -1,0 +1,9 @@
+pyproject.toml
+src/consistency_auditor/__init__.py
+src/consistency_auditor/cli.py
+src/consistency_auditor.egg-info/PKG-INFO
+src/consistency_auditor.egg-info/SOURCES.txt
+src/consistency_auditor.egg-info/dependency_links.txt
+src/consistency_auditor.egg-info/entry_points.txt
+src/consistency_auditor.egg-info/requires.txt
+src/consistency_auditor.egg-info/top_level.txt
