@@ -39,7 +39,9 @@ def test_recorder_full_flow(tmp_path: Path):
     assert events_file.exists()
     content = events_file.read_text("utf-8")
     assert "RUN_START" in content
-    assert "aggressive" in content
+    # RunStart stores the config fingerprint (hash), not raw config values
+    assert "config_fingerprint" in content
+    assert "1.0.0" in content
 
     # 3. Log Decision with Snapshot
     # Create dummy bars

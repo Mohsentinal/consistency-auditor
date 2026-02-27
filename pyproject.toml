@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "consistency-auditor"
-version = "0.1.0"
-description = "Audit backtest vs live trading consistency (entries/exits, slippage, latency) and generate reports."
+version = "0.2.0"
+description = "Audit backtest vs live trading consistency (entries/exits, P&L drift, slippage statistics, event-log replay)."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -13,7 +13,8 @@ authors = [{name = "Mohsen Moghaddam"}]
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff"]
+snapshot = ["pandas>=2.0", "pyarrow>=14.0"]
+dev = ["pytest", "ruff", "pandas", "pyarrow"]
 
 [project.scripts]
 consistency-auditor = "consistency_auditor.cli:main"
