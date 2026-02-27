@@ -2,11 +2,11 @@
 
 Audit **backtest vs live trading** consistency and generate reports:
 
-- Missing / extra trades  
-- Entry time & price alignment with **full distribution statistics** (mean ± std, p50, p95, max)  
-- **Exit matching** — close time diff, close price diff  
-- **P&L drift** — per-trade and cumulative backtest vs live profit comparison  
-- **Event-log replay** — parse `ConsistencyRecorder` JSONL logs to audit the full decision → order → fill chain with latency stats  
+- Missing / extra trades
+- Entry time & price alignment with **full distribution statistics** (mean ± std, p50, p95, max)
+- **Exit matching** — close time diff, close price diff
+- **P&L drift** — per-trade and cumulative backtest vs live profit comparison
+- **Event-log replay** — parse `ConsistencyRecorder` JSONL logs to audit the full decision → order → fill chain with latency stats
 
 ## Dev setup (Windows)
 
@@ -36,8 +36,8 @@ Compare a backtest CSV against a live CSV:
 
 **Outputs (when `--out` is provided):**
 
-- `outputs\matched_demo.csv`   — matched pairs with entry + exit + P&L columns  
-- `outputs\unmatched_demo.csv` — missing_in_live + extra_in_live  
+- `outputs\matched_demo.csv`   — matched pairs with entry + exit + P&L columns
+- `outputs\unmatched_demo.csv` — missing_in_live + extra_in_live
 
 ### Example output
 
@@ -110,9 +110,17 @@ recorder = ConsistencyRecorder(root_dir="./run_outputs", run_id="run_001")
 recorder.log_startup(config=my_config, app_version="1.0.0")
 
 # On every bar:
-ctx = DecisionContext(symbol="EURUSD", decision_time=now, bid=1.10, ask=1.1001,
-                      spread=0.0001, strategy_tag="MACD_X", params=my_config,
-                      bars_hash=hash_of_bars, features_hash=hash_of_indicators)
+ctx = DecisionContext(
+    symbol="EURUSD",
+    decision_time=now,
+    bid=1.10,
+    ask=1.1001,
+    spread=0.0001,
+    strategy_tag="MACD_X",
+    params=my_config,
+    bars_hash=hash_of_bars,
+    features_hash=hash_of_indicators,
+)
 signal_id = recorder.log_decision(ctx, intent="BUY", bars=df_bars)
 
 # After order dispatch:
@@ -124,13 +132,29 @@ recorder.log_execution(ExecutionReport(signal_id=signal_id, event_subtype="FILL_
 
 ---
 
+## CSV input formats
+
+The loader accepts either normalized headers or MT5-style exports:
+
+**Normalized (recommended):**
+
+    trade_id,symbol,side,open_time,open_price,close_time,close_price,volume,sl,tp
+
+**MT5-style:**
+
+    Ticket,Symbol,Type,Time,Price,Volume
+
+Exit columns (`close_time`, `close_price`) are optional — if present on both sides of a matched pair, exit diff and P&L are computed automatically.
+
+---
+
 ## Exit codes
 
 | Code | Meaning |
 |------|---------|
-| 0    | Success |
-| 2    | Invalid usage / missing input file |
-| 3    | Mismatch / anomaly detected (only when `--fail-on` is set) |
+| 0 | Success |
+| 2 | Invalid usage / missing input file |
+| 3 | Mismatch or anomaly detected (only when `--fail-on` is set) |
 
 ---
 
